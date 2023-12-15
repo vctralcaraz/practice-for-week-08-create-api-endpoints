@@ -54,7 +54,9 @@ const server = http.createServer((req, res) => {
     // GET /dogs
     if (req.method === 'GET' && req.url === '/dogs') {
       // Your code here
-
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.write(JSON.stringify(dogs));
       return res.end();
     }
 
@@ -64,7 +66,28 @@ const server = http.createServer((req, res) => {
       if (urlParts.length === 3) {
         const dogId = urlParts[2];
         // Your code here
+
+        let foundDog = null;
+        
+        for(let i = 0; i < dogs.length; i++) {
+          let dog = dogs[i];
+
+          if(String(dog.dogId) === dogId) {
+            foundDog = dog;
+          }
+        }
+
+        if(foundDog) {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.write(JSON.stringify(foundDog));
+          return res.end();
+        }
       }
+
+      res.statusCode = 404;
+      res.setHeader('Content-Type', 'application/json');
+      res.write(JSON.stringify({message: "This dog does not exist. Sorry!"}))
       return res.end();
     }
 
@@ -72,6 +95,19 @@ const server = http.createServer((req, res) => {
     if (req.method === 'POST' && req.url === '/dogs') {
       const { name, age } = req.body;
       // Your code here
+      const dogId = getNewDogId();
+
+      let newDog = {
+        name: name,
+        age: age,
+        dogId: dogId
+      }
+
+      dogs.push(newDog);
+
+      res.statusCode = 201;
+      res.setHeader('Content-Type', 'application/json');
+      res.write(JSON.stringify(newDog));
       return res.end();
     }
 
@@ -80,7 +116,28 @@ const server = http.createServer((req, res) => {
       const urlParts = req.url.split('/');
       if (urlParts.length === 3) {
         const dogId = urlParts[2];
+        const { name, age } = req.body;
         // Your code here
+
+        let foundDog = null;
+        
+        for(let i = 0; i < dogs.length; i++) {
+          let dog = dogs[i];
+
+          if(String(dog.dogId) === dogId) {
+            dog.name = name;
+            dog.age = age;
+
+            foundDog = dog;
+          }
+        }
+
+        if(foundDog) {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.write(JSON.stringify(foundDog));
+          return res.end();
+        }
       }
       return res.end();
     }
@@ -91,6 +148,17 @@ const server = http.createServer((req, res) => {
       if (urlParts.length === 3) {
         const dogId = urlParts[2];
         // Your code here
+
+        const isIndex = el => String(el.dogId) === dogId;
+        const dogIndex = dogs.findIndex(isIndex);
+
+        if(dogIndex >= 0) {
+          dogs.splice(dogIndex, 1);
+
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.write(JSON.stringify({'message': 'Successfully deleted'}));
+        }
       }
       return res.end();
     }
